@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,17 +7,43 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --menu-bg: rgba(255, 255, 255, 0.98);
+  --menu-border: rgba(0, 0, 0, 0.1);
+  --menu-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --menu-bg: rgba(23, 23, 23, 0.98);
+    --menu-border: rgba(255, 255, 255, 0.1);
+    --menu-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+}
+
+@layer components {
+  .menu-dropdown {
+    @apply backdrop-blur-sm border border-opacity-10;
+    background: var(--menu-bg);
+    border-color: var(--menu-border);
+    box-shadow: var(--menu-shadow);
+  }
+
+  .menu-item {
+    @apply px-4 py-2 text-sm font-medium transition-colors duration-150;
+    @apply hover:bg-primary-5 hover:text-primary;
+  }
+
+  .menu-item-active {
+    @apply bg-primary/5 text-primary;
+  }
 }
