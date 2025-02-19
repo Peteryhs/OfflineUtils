@@ -27,7 +27,7 @@ A powerful collection of completely local, offline-capable utility tools for fil
 
 1. Clone the repository
 ```bash
-git clone [your-repo-url]
+git clone [[your-repo-url](https://github.com/Peteryhs/OfflineUtils)]
 cd offline-utils
 ```
 
