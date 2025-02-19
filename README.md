@@ -98,4 +98,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Next.js team for the amazing framework
 - pdf-lib for PDF manipulation capabilities
 - Sharp for image processing
-- All contributors who help improve this project
