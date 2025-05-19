@@ -4,7 +4,9 @@
 [![Next.js](https://img.shields.io/badge/Next.js-13.0+-blueviolet.svg)](https://nextjs.org/)
 [![Offline Capable](https://img.shields.io/badge/Offline-100%25-success.svg)](#features)
 
-A powerful collection of completely local, offline-capable utility tools for file conversion and manipulation. Built with Next.js and designed to prioritize privacy by performing all operations client-side.
+A powerful collection of completely local, offline-capable utility tools for file conversion and manipulation. By the time I needed to convert a sensitive document into PDF, I had to go through tons of trouble just to find offline software that does it well. 
+
+Built with Next.js and designed to prioritize privacy by performing all operations client-side.
 
 ## Features
 
@@ -26,7 +28,7 @@ A powerful collection of completely local, offline-capable utility tools for fil
 
 1. Clone the repository
 ```bash
-git clone [your-repo-url]
+git clone [https://github.com/Peteryhs/OfflineUtils]
 cd offline-utils
 ```
 
@@ -97,4 +99,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Next.js team for the amazing framework
 - pdf-lib for PDF manipulation capabilities
 - Sharp for image processing
-- All contributors who help improve this project
