@@ -34,8 +34,8 @@ export default function ImageProcessor() {
       <Header />
       <div className="max-w-4xl mx-auto pt-16 space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Image Editor</h1>
-          <p className="text-gray-400">Crop and edit your images with ease</p>
+          <h1 className="text-3xl font-bold mb-4">Image Tools</h1>
+          <p className="text-gray-400">Crop, rotate, and edit your images with ease</p>
         </div>
 
         {!imageUrl && (

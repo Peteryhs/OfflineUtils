@@ -18,6 +18,9 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
     width: 50,
     height: 50
   });
+  const [rotation, setRotation] = useState(0);
+  const [flipX, setFlipX] = useState(false);
+  const [flipY, setFlipY] = useState(false);
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -33,44 +36,66 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
     });
   }
 
+  function rotateLeft() {
+    setRotation((prev) => (prev - 90) % 360);
+  }
+
+  function rotateRight() {
+    setRotation((prev) => (prev + 90) % 360);
+  }
+
+  function flipHorizontal() {
+    setFlipX((prev) => !prev);
+  }
+
+  function flipVertical() {
+    setFlipY((prev) => !prev);
+  }
+
   function getCroppedImg() {
     if (!completedCrop || !imgRef.current || !canvasRef.current) return;
-
+  
     const image = imgRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-
+  
     if (!ctx) return;
-
-    // Set canvas size to match the cropped image size
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
-
+  
+    // Calculate the actual dimensions based on the original image
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+  
+    // Set canvas size to match the scaled crop size
+    canvas.width = completedCrop.width * scaleX;
+    canvas.height = completedCrop.height * scaleY;
+  
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+    // Apply transformations
+    ctx.save();
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+    ctx.translate(-canvas.width/2, -canvas.height/2);
+  
+    // Draw the cropped portion of the image with proper scaling
     ctx.drawImage(
       image,
-      completedCrop.x,
-      completedCrop.y,
-      completedCrop.width,
-      completedCrop.height,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
       0,
       0,
-      completedCrop.width,
-      completedCrop.height
+      canvas.width,
+      canvas.height
     );
-
-    // Create a new canvas to strip metadata
-    const cleanCanvas = document.createElement('canvas');
-    cleanCanvas.width = completedCrop.width;
-    cleanCanvas.height = completedCrop.height;
-    const cleanCtx = cleanCanvas.getContext('2d');
-    
-    if (!cleanCtx) return;
-    
-    // Draw the image onto the new canvas to strip metadata
-    cleanCtx.drawImage(canvas, 0, 0);
-    
-    // Convert to blob with metadata stripped and create download link
-    cleanCanvas.toBlob((blob) => {
+  
+    ctx.restore();
+  
+    // Convert to blob and create download link
+    canvas.toBlob((blob) => {
       if (!blob) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -78,13 +103,51 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
       a.download = 'cropped-image.png';
       a.click();
       URL.revokeObjectURL(url);
-    }, 'image/png', 1.0); // Use maximum quality to preserve image quality
+    }, 'image/png', 1.0);
   }
 
   return (
     <div className="space-y-6">
       {imageUrl && (
         <>
+          <div className="flex gap-4 mb-4">
+            <button
+              onClick={rotateLeft}
+              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Rotate Left
+            </button>
+            <button
+              onClick={rotateRight}
+              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+              Rotate Right
+            </button>
+            <button
+              onClick={flipHorizontal}
+              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              Flip H
+            </button>
+            <button
+              onClick={flipVertical}
+              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              Flip V
+            </button>
+          </div>
           <div className="relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800/50">
             <ReactCrop
               crop={crop}
@@ -96,9 +159,13 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
               <img
                 ref={imgRef}
                 src={imageUrl}
-                style={{ maxWidth: '100%', height: 'auto' }}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  transform: `rotate(${rotation}deg) scale(${flipX ? -1 : 1}, ${flipY ? -1 : 1})`
+                }}
                 onLoad={onImageLoad}
-                alt="Crop me"
+                alt="Edit me"
                 className="rounded-lg"
               />
             </ReactCrop>
@@ -111,7 +178,7 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              Download Cropped Image
+              Download Edited Image
             </button>
           </div>
           <canvas

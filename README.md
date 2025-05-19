@@ -3,7 +3,6 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-13.0+-blueviolet.svg)](https://nextjs.org/)
 [![Offline Capable](https://img.shields.io/badge/Offline-100%25-success.svg)](#features)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
 
 A powerful collection of completely local, offline-capable utility tools for file conversion and manipulation. Built with Next.js and designed to prioritize privacy by performing all operations client-side.
 

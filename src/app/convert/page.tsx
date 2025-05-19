@@ -70,7 +70,7 @@ export default function Convert() {
 
         <div {...getRootProps()} className={`
           p-12 border-2 border-dashed rounded-2xl text-center cursor-pointer
-          transition-all duration-300 ease-out
+          transition-all duration-300 ease-out 
           ${isDragActive ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 hover:border-gray-600'}
         `}>
           <input {...getInputProps()} />

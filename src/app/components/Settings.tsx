@@ -73,11 +73,11 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
           />
           <motion.div
             ref={settingsRef}
-            className="menu-dropdown relative w-96 rounded-xl bg-white/95 dark:bg-gray-900/95 p-6"
+            className="menu-dropdown relative w-96 rounded-xl bg-gray-900 border border-gray-800 p-4"
           >
             <h2 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">Settings</h2>
             
-            <div className="space-y-6">
+            <div className="space-y-6 bg-gray-900 p-4 rounded-xl border border-gray-800">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Theme</label>
                 <select

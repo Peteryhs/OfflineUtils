@@ -47,6 +47,18 @@ const utilityCards = [
     icon: "/file.svg",
     path: "/metadata"
   },
+  {
+    title: "Flashcards",
+    description: "Create and study with interactive flashcards",
+    icon: "/window.svg",
+    path: "/flashcard"
+  },
+  {
+    title: "HTML Renderer",
+    description: "Render and preview HTML code snippets securely.",
+    icon: "/globe.svg", // Using globe as it's web related, and /web page uses it.
+    path: "/web"
+  },
 ];
 
 import Header from './components/Header';
