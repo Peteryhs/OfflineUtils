@@ -1,4 +1,6 @@
-<img width="722" alt="sdf" src="https://github.com/user-attachments/assets/8b8aced4-6bde-4aab-aca5-a752683f637c" style="align: center;"/> 
+
+# ![banner](https://github.com/user-attachments/assets/a7183020-1322-4b36-ab01-3ae419455d7e)
+
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-13.0+-blueviolet.svg)](https://nextjs.org/)
