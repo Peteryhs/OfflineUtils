@@ -1,4 +1,4 @@
-# Offline Utils - Local Utility Dashboard
+<img width="722" alt="sdf" src="https://github.com/user-attachments/assets/8b8aced4-6bde-4aab-aca5-a752683f637c" /> 
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-13.0+-blueviolet.svg)](https://nextjs.org/)
