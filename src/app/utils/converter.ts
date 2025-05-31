@@ -13,7 +13,7 @@ export async function convertToImage(file: File, format: 'jpg' | 'png' | 'webp',
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext('2d')!;
+    // const ctx = canvas.getContext('2d')!; // ctx is unused in this block
 
     // Draw PDF page on canvas (simplified version - may need pdf.js for better rendering)
     // For now, we'll return null as PDF to image conversion needs more complex implementation

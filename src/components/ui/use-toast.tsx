@@ -17,30 +17,31 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-} as const
+// Define the action types directly as a type
+type ActionTypes = {
+  ADD_TOAST: "ADD_TOAST";
+  UPDATE_TOAST: "UPDATE_TOAST";
+  DISMISS_TOAST: "DISMISS_TOAST";
+  REMOVE_TOAST: "REMOVE_TOAST";
+};
 
-type ActionType = typeof actionTypes
+// type ActionType = typeof actionTypes // This is no longer needed
 
 type Action =
   | {
-      type: ActionType["ADD_TOAST"]
+      type: ActionTypes["ADD_TOAST"] // Use the new ActionTypes type
       toast: ToasterToast
     }
   | {
-      type: ActionType["UPDATE_TOAST"]
+      type: ActionTypes["UPDATE_TOAST"] // Use the new ActionTypes type
       toast: Partial<ToasterToast>
     }
   | {
-      type: ActionType["DISMISS_TOAST"]
+      type: ActionTypes["DISMISS_TOAST"] // Use the new ActionTypes type
       toastId?: ToasterToast["id"]
     }
   | {
-      type: ActionType["REMOVE_TOAST"]
+      type: ActionTypes["REMOVE_TOAST"] // Use the new ActionTypes type
       toastId?: ToasterToast["id"]
     }
 

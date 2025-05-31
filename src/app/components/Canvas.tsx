@@ -4,13 +4,14 @@ import { useState, useRef } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
+import Image from 'next/image';
+
 interface CanvasProps {
-  width?: number;
-  height?: number;
+  // _width and _height props are unused
   imageUrl?: string;
 }
 
-export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasProps) {
+export default function Canvas({ imageUrl }: CanvasProps) { // Removed _width, _height from props
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
     x: 25,
@@ -26,7 +27,7 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   function onImageLoad() {
-    const { width, height } = imgRef.current!;
+    // const { naturalWidth: _width, naturalHeight: _height } = imgRef.current!; // _width, _height are unused
     setCrop({
       unit: '%',
       x: 25,
@@ -156,7 +157,7 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
               aspect={undefined}
               className="max-w-full"
             >
-              <img
+              <Image
                 ref={imgRef}
                 src={imageUrl}
                 style={{
@@ -167,6 +168,9 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
                 onLoad={onImageLoad}
                 alt="Edit me"
                 className="rounded-lg"
+                width={0}
+                height={0}
+                sizes="100vw"
               />
             </ReactCrop>
           </div>

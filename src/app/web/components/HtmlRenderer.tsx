@@ -1,19 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react"; // Added useCallback
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CodeMirror from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { autocompletion } from "@codemirror/autocomplete";
-import { Textarea } from "@/components/ui/textarea";
-import sanitizeHtml from "sanitize-html";
+import { Extension } from "@codemirror/state"; // Import Extension type
+// import { Textarea } from "@/components/ui/textarea"; // Textarea not used
+// import sanitizeHtml from "sanitize-html"; // sanitizeHtml is not used after removing htmlInput/renderedOutput logic
 
 export default function HtmlRenderer() {
-  const [htmlInput, setHtmlInput] = useState("");
-  const [renderedOutput, setRenderedOutput] = useState("");
-  const [code, setCode] = useState("");
+  // const [htmlInput, setHtmlInput] = useState(""); // htmlInput and setHtmlInput are not used
+  // const [renderedOutput, setRenderedOutput] = useState(""); // renderedOutput is not used
+  const [code, setCode] = useState(""); // This is used by CodeMirror and iframe
   const [dividerX, setDividerX] = useState(50); // percent
   const [dragging, setDragging] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -30,20 +31,20 @@ export default function HtmlRenderer() {
     }
   }, [code]);
 
-  useEffect(() => {
-    // Debounce rendering or render on button click for performance
-    const sanitized = sanitizeHtml(htmlInput);
-    setRenderedOutput(sanitized);
-  }, [htmlInput]);
+  // useEffect(() => { // This useEffect block is not needed if htmlInput and renderedOutput are removed
+  //   // Debounce rendering or render on button click for performance
+  //   const sanitized = sanitizeHtml(htmlInput); // htmlInput is not defined
+  //   // setRenderedOutput(sanitized); // setRenderedOutput is not defined
+  // }, [htmlInput]); // htmlInput is not defined
 
-  const onMouseMove = (e: MouseEvent) => {
+  const onMouseMove = useCallback((e: MouseEvent) => {
     if (!dragging || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     let percent = ((e.clientX - rect.left) / rect.width) * 100;
     percent = Math.max(10, Math.min(90, percent));
     setDividerX(percent);
-  };
-  const onMouseUp = () => setDragging(false);
+  }, [dragging, containerRef]);
+  const onMouseUp = useCallback(() => setDragging(false), []);
 
   useEffect(() => {
     if (dragging) {
@@ -54,11 +55,11 @@ export default function HtmlRenderer() {
         window.removeEventListener("mouseup", onMouseUp);
       };
     }
-  }, [dragging]);
+  }, [dragging, onMouseMove, onMouseUp]);
 
   // Helper to detect language mode based on content (simple heuristic)
   const getExtensions = () => {
-    const exts = [html()];
+    const exts: Extension[] = [html()]; // Explicitly type exts as Extension[]
     if (code.includes("<style")) exts.push(css());
     if (code.includes("<script")) exts.push(javascript());
     exts.push(autocompletion());

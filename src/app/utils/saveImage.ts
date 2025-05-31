@@ -1,5 +1,19 @@
-const piexif = require('piexifjs');
+import piexif from 'piexifjs';
 import { ExtendedImageMetadata } from './exif';
+
+// Define custom types for EXIF data structure
+type IFDTagValue = string | number | number[] | [number, number] | [number, number][];
+
+interface IFD {
+  [tag: number]: IFDTagValue;
+}
+
+interface CustomPiexifDict {
+  '0th': IFD;
+  'Exif': IFD;
+  'GPS': IFD;
+  thumbnail?: string; // Changed from string | null | undefined to string | undefined
+}
 
 export async function saveImageWithMetadata(imageUrl: string, metadata: ExtendedImageMetadata): Promise<Blob> {
   try {
@@ -9,11 +23,12 @@ export async function saveImageWithMetadata(imageUrl: string, metadata: Extended
     const arrayBuffer = await blob.arrayBuffer();
     const base64Image = Buffer.from(arrayBuffer).toString('base64');
     
-    // Create EXIF dictionary
-    const exifDict: any = {};
-    exifDict['0th'] = {};
-    exifDict['Exif'] = {};
-    exifDict['GPS'] = {};
+    // Create EXIF dictionary using the custom interface
+    const exifDict: CustomPiexifDict = {
+      '0th': {},
+      'Exif': {},
+      'GPS': {}
+    };
 
     // Add basic EXIF data
     if (metadata.make) exifDict['0th'][piexif.ImageIFD.Make] = metadata.make;

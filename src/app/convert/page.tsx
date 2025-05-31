@@ -34,11 +34,15 @@ export default function Convert() {
     if (!file) return;
     setConverting(true);
     try {
-      let result: ArrayBuffer;
+      let result: ArrayBuffer | Uint8Array | null = null; // Initialize with null and set correct type
       if (targetFormat === 'pdf') {
-        result = await convertToPDF(file);
+        result = await convertToPDF(file); // Returns Uint8Array
       } else {
-        result = await convertToImage(file, targetFormat, quality);
+        result = await convertToImage(file, targetFormat, quality); // Returns ArrayBuffer | null
+      }
+
+      if (!result) { // Check for null before creating blob
+        throw new Error("Conversion resulted in no data.");
       }
 
       // Create and trigger download

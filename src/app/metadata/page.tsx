@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ export default function MetadataViewer() {
     }));
   };
 
-  const updateMetadataField = (category: string, field: string, value: any) => {
+  const updateMetadataField = (category: string, field: string, value: string | number | undefined) => {
     setMetadata(prev => {
       if (!prev) return prev;
       if (category === 'exif' && prev.exif) {
@@ -96,7 +97,7 @@ export default function MetadataViewer() {
       lastModified: new Date(file.lastModified).toLocaleString(),
     };
 
-    const img = new Image();
+    const img = new window.Image(); // Use window.Image to avoid conflict with next/image
     img.src = url;
     await new Promise((resolve) => {
       img.onload = () => {
@@ -126,7 +127,7 @@ export default function MetadataViewer() {
     setEditMode({});
   }, [imageUrl]);
 
-  const renderEditableField = (category: string, field: string, value: any, label: string) => {
+  const renderEditableField = (category: string, field: string, value: string | number | undefined, label: string) => {
     const isEditing = editMode[`${category}.${field}`];
     return (
       <div className="space-y-2">
@@ -237,10 +238,12 @@ export default function MetadataViewer() {
                     exit="hidden"
                     className="relative w-full h-64 rounded-lg overflow-hidden"
                   >
-                    <img
+                    <Image
                       src={imageUrl}
                       alt="Selected image"
-                      className="object-contain w-full h-full"
+                      layout="fill"
+                      objectFit="contain"
+                      className="rounded-lg"
                     />
                   </motion.div>
                 )}

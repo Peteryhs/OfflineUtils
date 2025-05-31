@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Canvas from '../components/Canvas';
 import Header from '../components/Header';
@@ -61,7 +61,7 @@ export default function ImageProcessor() {
 
         {imageUrl && (
           <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
-            <Canvas width={800} height={600} imageUrl={imageUrl} />
+            <Canvas imageUrl={imageUrl} />
           </div>
         )}
       </div>
