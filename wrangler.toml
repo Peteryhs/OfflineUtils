@@ -1,0 +1,4 @@
+name = "offlineutils"               # anything; not visible to visitors
+compatibility_date = "2025-06-09"
+pages_build_output_dir = ".vercel/output/static"
+compatibility_flags = ["nodejs_compat"]
