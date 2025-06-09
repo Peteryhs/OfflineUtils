@@ -43,7 +43,7 @@ export default function MetadataViewer() {
     }));
   };
 
-  const updateMetadataField = (category: string, field: string, value: any) => {
+  const updateMetadataField = (category: string, field: string, value: string | number | undefined) => {
     setMetadata(prev => {
       if (!prev) return prev;
       if (category === 'exif' && prev.exif) {
@@ -126,7 +126,7 @@ export default function MetadataViewer() {
     setEditMode({});
   }, [imageUrl]);
 
-  const renderEditableField = (category: string, field: string, value: any, label: string) => {
+  const renderEditableField = (category: string, field: string, value: string | number | undefined, label: string) => {
     const isEditing = editMode[`${category}.${field}`];
     return (
       <div className="space-y-2">

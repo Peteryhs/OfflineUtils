@@ -1,5 +1,4 @@
-import { PDFDocument, PageSizes, degrees } from 'pdf-lib';
-import { getDocument } from 'pdfjs-dist';
+import { PDFDocument, PageSizes } from 'pdf-lib';
 
 interface MergeOptions {
   quality: number;

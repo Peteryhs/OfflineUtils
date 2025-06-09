@@ -10,7 +10,7 @@ interface CanvasProps {
   imageUrl?: string;
 }
 
-export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasProps) {
+export default function Canvas({ imageUrl }: CanvasProps) {
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
     x: 25,
@@ -26,7 +26,6 @@ export default function Canvas({ width = 800, height = 600, imageUrl }: CanvasPr
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   function onImageLoad() {
-    const { width, height } = imgRef.current!;
     setCrop({
       unit: '%',
       x: 25,
