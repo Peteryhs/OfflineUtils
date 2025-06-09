@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { Slider } from "@/components/ui/slider";
+import { Copy, Save } from 'lucide-react'; // Added icons
 
 const UNICODE_RANGES = [
   { id: "basic-latin", label: "Basic Latin (ASCII)", start: 0x0020, end: 0x007F },
@@ -90,7 +91,7 @@ export default function UnicodeGenerator() {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="amount" className="text-sm font-medium">Number of Characters</Label>
-              <span className="text-sm text-gray-400">{amount}</span>
+              <span className="text-sm text-muted-foreground">{amount}</span> {/* Updated text color */}
             </div>
             <Slider
               id="amount"
@@ -106,9 +107,11 @@ export default function UnicodeGenerator() {
 
         <div className="space-y-3">
           <Label className="text-sm font-medium">Unicode Ranges</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 rounded-xl border border-gray-800 bg-gray-900/30 backdrop-blur-sm">
+          {/* Updated container styling */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 rounded-xl border border-border bg-muted/50 backdrop-blur-sm">
             {UNICODE_RANGES.map((range) => (
-              <div key={range.id} className="flex items-center space-x-3 p-3 rounded-xl bg-gray-900/50 hover:bg-gray-800/50 border border-gray-800 hover:border-gray-700 transition-all duration-300 group">
+              // Updated item styling
+              <div key={range.id} className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-border hover:border-border/70 transition-all duration-300 group">
                 <Checkbox
                   id={range.id}
                   checked={selectedRanges.includes(range.id)}
@@ -119,9 +122,10 @@ export default function UnicodeGenerator() {
                         : selectedRanges.filter((id) => id !== range.id)
                     );
                   }}
-                  className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                  // Removed custom checkbox styling
                 />
-                <Label htmlFor={range.id} className="text-sm cursor-pointer text-gray-300 group-hover:text-white transition-colors duration-300">{range.label}</Label>
+                {/* Updated label text color */}
+                <Label htmlFor={range.id} className="text-sm cursor-pointer text-muted-foreground group-hover:text-foreground transition-colors duration-300">{range.label}</Label>
               </div>
             ))}
           </div>
@@ -129,7 +133,8 @@ export default function UnicodeGenerator() {
 
         <Button 
           onClick={handleGenerate} 
-          className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
+          // Removed explicit bg/text color, relying on default Button variant. Kept other custom classes.
+          className="w-full md:w-auto shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
         >
           Generate
         </Button>
@@ -138,24 +143,26 @@ export default function UnicodeGenerator() {
       {generatedText && (
         <div className="space-y-3">
           <Label className="text-sm font-medium">Generated Text</Label>
-          <div className="p-6 bg-gray-900/30 backdrop-blur-sm border border-gray-800 rounded-xl font-mono break-all relative min-h-[100px] max-h-[300px] overflow-y-auto group hover:border-gray-700 transition-all duration-300">
+          {/* Updated generated text display area styling */}
+          <div className="p-6 bg-muted/50 backdrop-blur-sm border border-border rounded-xl font-mono break-all relative min-h-[100px] max-h-[300px] overflow-y-auto group hover:border-input transition-all duration-300">
             {generatedText}
-            <div className="absolute top-3 right-3 flex gap-2">
+            <div className="absolute top-3 right-3 flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity duration-300">
+              {/* Removed explicit bg/border from outline buttons, added icons */}
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-gray-900/50 hover:bg-gray-800/50 border border-gray-800 hover:border-gray-700 transition-all duration-300"
                 onClick={handleCopy}
+                className="flex items-center gap-1.5"
               >
-                Copy
+                <Copy className="h-3.5 w-3.5" /> Copy
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-gray-900/50 hover:bg-gray-800/50 border border-gray-800 hover:border-gray-700 transition-all duration-300"
                 onClick={handleSave}
+                className="flex items-center gap-1.5"
               >
-                Save as File
+                <Save className="h-3.5 w-3.5" /> Save
               </Button>
             </div>
           </div>

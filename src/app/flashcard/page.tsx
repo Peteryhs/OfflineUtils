@@ -1,8 +1,13 @@
 'use client';
 
+'use client';
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'; // Updated Card imports
+import { Button } from '@/components/ui/button'; // Added Button import
+import { Input } from '@/components/ui/input'; // Added Input import
+import { useToast } from '@/components/ui/use-toast'; // Added useToast import
 import Header from '../components/Header';
 
 interface Flashcard {
@@ -20,6 +25,7 @@ export default function FlashcardPage() {
   const [newCardFront, setNewCardFront] = useState('');
   const [newCardBack, setNewCardBack] = useState('');
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const { toast } = useToast(); // Initialized useToast
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -44,6 +50,10 @@ export default function FlashcardPage() {
       setCards([...cards, newCard]);
       setNewCardFront('');
       setNewCardBack('');
+      toast({ // Added success toast for adding card
+        title: "Card Added",
+        description: "New flashcard has been successfully created.",
+      });
     }
   };
 
@@ -56,9 +66,16 @@ export default function FlashcardPage() {
 
   const deleteCard = (id: string) => {
     setCards(cards.filter(card => card.id !== id));
-    if (currentCard >= cards.length - 1) {
+    if (currentCard >= cards.length - 1 && cards.length > 1) { // check cards.length > 1
       setCurrentCard(Math.max(0, cards.length - 2));
+    } else if (cards.length <= 1) { // if only one card was left or no cards
+      setCurrentCard(0);
+      setIsFlipped(false); // Reset flip state if no cards or one card left
     }
+    toast({ // Added toast for deleting card
+      title: "Card Deleted",
+      description: "The flashcard has been removed.",
+    });
   };
 
   const editCard = (id: string, front: string, back: string) => {
@@ -80,41 +97,40 @@ export default function FlashcardPage() {
         }}
         transition={{ duration: 0.6 }}
       >
-        <Card className="p-6 bg-gray-900/50 backdrop-blur-xl border-gray-800">
+        <Card className="p-6"> {/* Removed redundant styling from main Card */}
           <h1 className="text-2xl font-semibold mb-6">Flashcards</h1>
           
           {/* Add new card form */}
-          <div className="mb-8 p-6 bg-gray-800/50 rounded-lg border border-gray-700">
-            <h2 className="text-xl font-semibold mb-4">Add New Card</h2>
-            <div className="space-y-4">
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Add New Card</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Front</label>
-                <input
+                <label htmlFor="newCardFront" className="block text-sm font-medium text-muted-foreground mb-1">Front</label>
+                <Input
+                  id="newCardFront"
                   type="text"
                   value={newCardFront}
                   onChange={(e) => setNewCardFront(e.target.value)}
-                  className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter the question or term"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Back</label>
-                <input
+                <label htmlFor="newCardBack" className="block text-sm font-medium text-muted-foreground mb-1">Back</label>
+                <Input
+                  id="newCardBack"
                   type="text"
                   value={newCardBack}
                   onChange={(e) => setNewCardBack(e.target.value)}
-                  className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter the answer or definition"
                 />
               </div>
-              <button
-                onClick={addCard}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-              >
+              <Button onClick={addCard}>
                 Add Card
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Flashcard display */}
           {cards.length > 0 ? (
@@ -172,15 +188,16 @@ export default function FlashcardPage() {
                     transition={{ duration: 0.4 }}
                   />
                 </div>
-                <p className="text-gray-400 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Card {currentCard + 1} of {cards.length}
                 </p>
-                <button
+                <Button
                   onClick={nextCard}
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  variant="link"
+                  className="text-sm text-muted-foreground hover:text-foreground"
                 >
                   Press space to continue
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -208,36 +225,37 @@ export default function FlashcardPage() {
                   className="p-4"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {cards.map((card) => (
-                <Card key={card.id} className="bg-gray-800/50 border-gray-700">
-                  <div className="p-4 space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Front</label>
-                      <input
-                        type="text"
-                        value={card.front}
-                        onChange={(e) => editCard(card.id, e.target.value, card.back)}
-                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Back</label>
-                      <input
-                        type="text"
-                        value={card.back}
-                        onChange={(e) => editCard(card.id, card.front, e.target.value)}
-                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                    <button
-                      onClick={() => deleteCard(card.id)}
-                      className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-                    >
-                      Delete Card
-                    </button>
-                  </div>
-                </Card>
-              ))}
+                    {cards.map((card) => (
+                      <Card key={card.id}> {/* Standardized Card styling */}
+                        <CardContent className="p-4 space-y-4 pt-6"> {/* Added pt-6 to CardContent for padding */}
+                          <div>
+                            <label htmlFor={`front-${card.id}`} className="block text-sm font-medium text-muted-foreground mb-1">Front</label>
+                            <Input
+                              id={`front-${card.id}`}
+                              type="text"
+                              value={card.front}
+                              onChange={(e) => editCard(card.id, e.target.value, card.back)}
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor={`back-${card.id}`} className="block text-sm font-medium text-muted-foreground mb-1">Back</label>
+                            <Input
+                              id={`back-${card.id}`}
+                              type="text"
+                              value={card.back}
+                              onChange={(e) => editCard(card.id, card.front, e.target.value)}
+                            />
+                          </div>
+                          <Button
+                            onClick={() => deleteCard(card.id)}
+                            variant="destructive"
+                            className="w-full"
+                          >
+                            Delete Card
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 </motion.div>
               )}

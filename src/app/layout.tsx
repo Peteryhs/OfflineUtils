@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "A collection of completely local conversion and utility tools",
 };
 
+import { Toaster } from "@/components/ui/toaster"; // Added import
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,6 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground min-h-screen`}
       >
         {children}
+        <Toaster /> {/* Added Toaster */}
       </body>
     </html>
   );

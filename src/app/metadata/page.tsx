@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Header from '../components/Header';
+import { useToast } from '@/components/ui/use-toast'; // Added useToast
 import { getExifData, ExtendedImageMetadata } from '../utils/exif';
 import { estimateLocation } from '../utils/location';
 import { fadeIn, slideIn, expandSection, scaleIn, staggerChildren } from '@/lib/animations';
@@ -28,6 +29,8 @@ export default function MetadataViewer() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
   const [editMode, setEditMode] = useState<{[key: string]: boolean}>({});
+  const [isSavingMetadata, setIsSavingMetadata] = useState(false); // Added state for saving
+  const { toast } = useToast(); // Initialized useToast
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -79,6 +82,10 @@ export default function MetadataViewer() {
         delete newMetadata.exif.dateTimeOriginal;
       }
       return newMetadata;
+    });
+    toast({ // Added toast for clearing privacy data
+      title: "Privacy Data Cleared",
+      description: "Sensitive metadata fields have been cleared from view. Save the image to apply changes permanently.",
     });
   };
 
@@ -188,22 +195,35 @@ export default function MetadataViewer() {
                     <motion.div variants={scaleIn}>
                       <Button
                         onClick={async () => {
-                          if (imageUrl && metadata?.exif) {
+                          if (imageUrl && metadata?.exif && metadata.fileName) {
+                            setIsSavingMetadata(true);
                             try {
                               const modifiedImage = await saveImageWithMetadata(imageUrl, metadata.exif);
                               const downloadUrl = URL.createObjectURL(modifiedImage);
                               const link = document.createElement('a');
                               link.href = downloadUrl;
-                              link.download = metadata.fileName;
+                              link.download = metadata.fileName; // Ensure fileName is available
                               document.body.appendChild(link);
                               link.click();
                               document.body.removeChild(link);
                               URL.revokeObjectURL(downloadUrl);
+                              toast({
+                                title: "Image Saved",
+                                description: `Successfully saved ${metadata.fileName} with updated metadata.`,
+                              });
                             } catch (error) {
                               console.error('Error saving image:', error);
+                              toast({
+                                title: "Save Failed",
+                                description: "Could not save the image. Check console for details.",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setIsSavingMetadata(false);
                             }
                           }
                         }}
+                        isLoading={isSavingMetadata} // Passed isLoading state
                         className="bg-green-600 hover:bg-green-700"
                       >
                         Save Image

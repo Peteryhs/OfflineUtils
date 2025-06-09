@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import type { Identifier, XYCoord } from 'dnd-core';
+import { Button } from '@/components/ui/button'; // Added Button import
+import { X } from 'lucide-react'; // Added X icon import
 
 interface DraggableFileProps {
   id: number;
@@ -69,16 +71,18 @@ export const DraggableFile = ({ id, name, index, moveFile, onRemove }: Draggable
     <div
       ref={ref}
       data-handler-id={handlerId}
-      className={`flex items-center justify-between p-2 bg-gray-800/50 backdrop-blur-xl rounded-lg border border-gray-700 cursor-move transition-opacity`}
+      className={`flex items-center justify-between p-3 bg-card/50 backdrop-blur-xl rounded-lg border border-border cursor-move transition-opacity`} // Updated classes
       style={{ opacity }}
     >
-      <span className="truncate flex-1 text-gray-300">{name}</span>
-      <button
+      <span className="truncate flex-1 text-card-foreground">{name}</span> {/* Updated text color */}
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={onRemove}
-        className="ml-2 text-red-400 hover:text-red-300 transition-colors"
+        className="ml-2 text-destructive hover:text-destructive/80 h-7 w-7" // Adjusted size for better click target with icon
       >
-        Remove
-      </button>
+        <X className="h-4 w-4" />
+      </Button>
     </div>
   );
 };

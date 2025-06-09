@@ -1,9 +1,12 @@
 "use client";
 
+"use client";
+
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Canvas from '../components/Canvas';
 import Header from '../components/Header';
+import { Card, CardContent } from '@/components/ui/card'; // Added import
 
 export default function ImageProcessor() {
   const [imageUrl, setImageUrl] = useState<string>('');
@@ -60,9 +63,11 @@ export default function ImageProcessor() {
         )}
 
         {imageUrl && (
-          <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
-            <Canvas width={800} height={600} imageUrl={imageUrl} />
-          </div>
+          <Card>
+            <CardContent className="pt-6"> {/* Added pt-6 to match original p-6. Canvas might not need space-y-6. */}
+              <Canvas width={800} height={600} imageUrl={imageUrl} />
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

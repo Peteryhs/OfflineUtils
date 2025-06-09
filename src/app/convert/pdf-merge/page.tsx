@@ -1,12 +1,19 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+'use client';
+
+import { useState, useCallback } from 'react';
 import { DraggableFile } from '../../components/DraggableFile';
 import { useDropzone } from 'react-dropzone';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { mergeToPDF } from '../../utils/pdf-merge';
 import Header from '../../components/Header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'; // Added Card imports
+import { Button } from '@/components/ui/button'; // Added Button import
+import { Slider } from '@/components/ui/slider'; // Added Slider import
+import { useToast } from '@/components/ui/use-toast'; // Added useToast import
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -23,6 +30,8 @@ export default function PDFMergePage() {
     quality: 100,
     margin: 0,
   });
+  const [isMerging, setIsMerging] = useState(false); // Added isMerging state
+  const { toast } = useToast(); // Initialized useToast
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const filesWithPreview = acceptedFiles.map(file => 
@@ -59,25 +68,33 @@ export default function PDFMergePage() {
 
   const handleMerge = async () => {
     if (files.length === 0) return;
-
+    setIsMerging(true); // Set isMerging to true
     try {
       const mergedPdfBytes = await mergeToPDF(files, options);
       const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
-      // Create a temporary link and trigger download
       const link = document.createElement('a');
       link.href = url;
       link.download = 'merged-document.pdf';
       document.body.appendChild(link);
       link.click();
       
-      // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      toast({ // Added success toast
+        title: "Merge Successful",
+        description: "Files have been merged into merged-document.pdf.",
+      });
     } catch (error) {
       console.error('Error merging files:', error);
-      alert('An error occurred while merging the files. Please try again.');
+      toast({ // Replaced alert with error toast
+        title: "Merge Failed",
+        description: "An error occurred while merging files. Please check the console for details.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsMerging(false); // Set isMerging to false in finally
     }
   };
 
@@ -113,44 +130,50 @@ export default function PDFMergePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
-              <h2 className="text-xl font-semibold mb-4 text-gray-100">Options</h2>
-              <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label htmlFor="qualitySlider" className="block text-sm font-medium text-muted-foreground mb-1">
                     Quality ({options.quality}%)
                   </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={options.quality}
-                    onChange={(e) => handleOptionChange('quality', parseInt(e.target.value))}
-                    className="w-full accent-blue-500"
+                  <Slider
+                    id="qualitySlider"
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={[options.quality]}
+                    onValueChange={(value) => handleOptionChange('quality', value[0])}
+                    className="w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label htmlFor="marginSlider" className="block text-sm font-medium text-muted-foreground mb-1">
                     Margin ({options.margin}px)
                   </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={options.margin}
-                    onChange={(e) => handleOptionChange('margin', parseInt(e.target.value))}
-                    className="w-full accent-blue-500"
+                  <Slider
+                    id="marginSlider"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[options.margin]}
+                    onValueChange={(value) => handleOptionChange('margin', value[0])}
+                    className="w-full"
                   />
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
-              <h2 className="text-xl font-semibold mb-4 text-gray-100">Files ({files.length})</h2>
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Files ({files.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 max-h-[300px] overflow-y-auto">
                 {files.map((file, index) => (
                   <DraggableFile
-                    key={file.name + index}
+                    key={file.name + index} // Consider a more robust key if names can repeat
                     id={index}
                     name={file.name}
                     index={index}
@@ -164,17 +187,19 @@ export default function PDFMergePage() {
                     onRemove={() => handleRemoveFile(index)}
                   />
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <button
+          <Button
             onClick={handleMerge}
-            disabled={files.length === 0}
-            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-300 ${files.length === 0 ? 'bg-gray-700 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/25'}`}
+            disabled={files.length === 0 || isMerging}
+            isLoading={isMerging}
+            className="w-full"
+            size="lg"
           >
             Merge Files
-          </button>
+          </Button>
         </div>
       </div>
     </DndProvider>

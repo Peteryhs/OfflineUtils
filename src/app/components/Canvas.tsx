@@ -3,6 +3,9 @@
 import { useState, useRef } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { Button } from '@/components/ui/button'; // Added Button import
+import { useToast } from '@/components/ui/use-toast'; // Added useToast import
+import { RotateCcw, RotateCw, ArrowLeftRight, ArrowUpDown, Download } from 'lucide-react'; // Added Lucide icons
 
 interface CanvasProps {
   width?: number;
@@ -22,8 +25,10 @@ export default function Canvas({ imageUrl }: CanvasProps) {
   const [flipX, setFlipX] = useState(false);
   const [flipY, setFlipY] = useState(false);
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const [isDownloading, setIsDownloading] = useState(false); // Added isDownloading state
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { toast } = useToast(); // Initialized useToast
 
   function onImageLoad() {
     setCrop({
@@ -51,16 +56,33 @@ export default function Canvas({ imageUrl }: CanvasProps) {
     setFlipY((prev) => !prev);
   }
 
-  function getCroppedImg() {
-    if (!completedCrop || !imgRef.current || !canvasRef.current) return;
-  
-    const image = imgRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-  
-    if (!ctx) return;
-  
-    // Calculate the actual dimensions based on the original image
+  async function getCroppedImg() { // Made async for potential promise in toBlob
+    if (!completedCrop || !imgRef.current || !canvasRef.current) {
+      toast({
+        title: "Error",
+        description: "Cannot process image: Missing crop, image reference, or canvas reference.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      const image = imgRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        toast({
+          title: "Error",
+          description: "Could not get canvas context.",
+          variant: "destructive",
+        });
+        setIsDownloading(false); // Reset before early return
+        return;
+      }
+
+      // Calculate the actual dimensions based on the original image
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
   
@@ -94,91 +116,97 @@ export default function Canvas({ imageUrl }: CanvasProps) {
     ctx.restore();
   
     // Convert to blob and create download link
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'cropped-image.png';
-      a.click();
-      URL.revokeObjectURL(url);
-    }, 'image/png', 1.0);
+      // Convert to blob and create download link
+      await new Promise<void>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            toast({
+              title: "Error",
+              description: "Could not create image blob.",
+              variant: "destructive",
+            });
+            reject(new Error("Could not create image blob."));
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'cropped-image.png';
+          document.body.appendChild(a); // Required for Firefox
+          a.click();
+          document.body.removeChild(a); // Clean up
+          URL.revokeObjectURL(url);
+          toast({
+            title: "Image Ready",
+            description: "Cropped image download started.",
+          });
+          resolve();
+        }, 'image/png', 1.0);
+      });
+    } catch (e) {
+      console.error("Error in getCroppedImg:", e);
+      toast({
+        title: "Error",
+        description: "Could not process image for download.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   }
 
   return (
     <div className="space-y-6">
       {imageUrl && (
         <>
-          <div className="flex gap-4 mb-4">
-            <button
-              onClick={rotateLeft}
-              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Rotate Left
-            </button>
-            <button
-              onClick={rotateRight}
-              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-              Rotate Right
-            </button>
-            <button
-              onClick={flipHorizontal}
-              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-              Flip H
-            </button>
-            <button
-              onClick={flipVertical}
-              className="px-4 py-2 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-              </svg>
-              Flip V
-            </button>
+          <div className="flex flex-wrap gap-2 mb-4"> {/* Changed to flex-wrap and gap-2 for better responsiveness */}
+            <Button variant="outline" onClick={rotateLeft} className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" /> Rotate Left
+            </Button>
+            <Button variant="outline" onClick={rotateRight} className="flex items-center gap-2">
+              <RotateCw className="h-4 w-4" /> Rotate Right
+            </Button>
+            <Button variant="outline" onClick={flipHorizontal} className="flex items-center gap-2">
+              <ArrowLeftRight className="h-4 w-4" /> Flip H
+            </Button>
+            <Button variant="outline" onClick={flipVertical} className="flex items-center gap-2">
+              <ArrowUpDown className="h-4 w-4" /> Flip V
+            </Button>
           </div>
-          <div className="relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800/50">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card/50"> {/* Updated classes */}
             <ReactCrop
               crop={crop}
               onChange={(c) => setCrop(c)}
               onComplete={(c) => setCompletedCrop(c)}
               aspect={undefined}
-              className="max-w-full"
+              className="max-w-full" // Ensure ReactCrop itself doesn't cause overflow issues
             >
               <img
                 ref={imgRef}
                 src={imageUrl}
                 style={{
-                  maxWidth: '100%',
-                  height: 'auto',
+                  maxWidth: '100%', // This should be handled by ReactCrop, but good to have
+                  maxHeight: '60vh', // Constrain image height within the crop area
+                  objectFit: 'contain', // Ensure aspect ratio is maintained
                   transform: `rotate(${rotation}deg) scale(${flipX ? -1 : 1}, ${flipY ? -1 : 1})`
                 }}
                 onLoad={onImageLoad}
                 alt="Edit me"
-                className="rounded-lg"
+                // className="rounded-lg" // Rounding might be better on the parent container
               />
             </ReactCrop>
           </div>
-          <div className="flex justify-end">
-            <button
+          <div className="flex justify-end mt-4"> {/* Added mt-4 for spacing */}
+            <Button
+              variant="default"
               onClick={getCroppedImg}
-              className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-300 ease-out hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-4 focus:ring-blue-500/20 font-medium flex items-center gap-2"
+              isLoading={isDownloading}
+              className="flex items-center gap-2"
+              size="lg" // Made button larger
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
+              <Download className="h-5 w-5" />
               Download Edited Image
-            </button>
+            </Button>
           </div>
           <canvas
             ref={canvasRef}

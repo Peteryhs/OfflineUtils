@@ -73,17 +73,23 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
           />
           <motion.div
             ref={settingsRef}
-            className="menu-dropdown relative w-96 rounded-xl bg-gray-900 border border-gray-800 p-4"
+            // Removed bg-gray-900 and border border-gray-800, relying on .menu-dropdown class from globals.css
+            className="menu-dropdown relative w-96 rounded-xl p-4"
           >
-            <h2 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">Settings</h2>
+            {/* Updated title text color */}
+            <h2 className="mb-6 text-2xl font-semibold text-foreground">Settings</h2>
             
-            <div className="space-y-6 bg-gray-900 p-4 rounded-xl border border-gray-800">
+            {/* Updated inner content panel styling */}
+            <div className="space-y-6 bg-muted p-4 rounded-xl border border-border">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Theme</label>
+                {/* Updated label text color */}
+                <label htmlFor="themeSelect" className="block text-sm font-medium text-muted-foreground">Theme</label>
                 <select
+                  id="themeSelect"
                   value={settings.theme}
                   onChange={(e) => handleSettingChange('theme', e.target.value)}
-                  className="menu-item w-full rounded-lg border-0 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary"
+                  // Applied standard input styling
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
@@ -91,11 +97,12 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Default Save Location</label>
+                <label htmlFor="saveLocationSelect" className="block text-sm font-medium text-muted-foreground">Default Save Location</label>
                 <select
+                  id="saveLocationSelect"
                   value={settings.defaultSaveLocation}
                   onChange={(e) => handleSettingChange('defaultSaveLocation', e.target.value)}
-                  className="menu-item w-full rounded-lg border-0 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 >
                   <option value="downloads">Downloads</option>
                   <option value="documents">Documents</option>
@@ -104,11 +111,12 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Preferred Format</label>
+                <label htmlFor="formatSelect" className="block text-sm font-medium text-muted-foreground">Preferred Format</label>
                 <select
+                  id="formatSelect"
                   value={settings.preferredFormat}
                   onChange={(e) => handleSettingChange('preferredFormat', e.target.value)}
-                  className="menu-item w-full rounded-lg border-0 bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-primary"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 >
                   <option value="pdf">PDF</option>
                   <option value="docx">DOCX</option>

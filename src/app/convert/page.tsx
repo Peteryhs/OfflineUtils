@@ -1,9 +1,14 @@
 "use client";
 
+"use client";
+
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Header from '../components/Header';
 import { convertToImage, convertToPDF } from '../utils/converter';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button'; // Added Button import
+import { useToast } from '@/components/ui/use-toast'; // Added useToast import
 
 type ConversionFormat = 'pdf' | 'jpg' | 'png' | 'webp';
 
@@ -12,6 +17,7 @@ export default function Convert() {
   const [targetFormat, setTargetFormat] = useState<ConversionFormat>('pdf');
   const [quality, setQuality] = useState<number>(90);
   const [converting, setConverting] = useState(false);
+  const { toast } = useToast(); // Initialized useToast
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -59,9 +65,18 @@ export default function Convert() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      toast({ // Added success toast
+        title: "Conversion Successful",
+        description: `${file.name} has been converted to ${targetFormat}.`,
+      });
     } catch (error) {
       console.error('Conversion failed:', error);
-      alert('Failed to convert file. Please try again.');
+      toast({ // Replaced alert with error toast
+        title: "Conversion Failed",
+        description: "Could not convert the file. Please try again or check the console for details.",
+        variant: "destructive",
+      });
     } finally {
       setConverting(false);
     }
@@ -103,24 +118,21 @@ export default function Convert() {
         </div>
 
         {file && (
-          <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-300">Convert to:</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="space-y-6 pt-6"> {/* Added pt-6 to match original p-6, CardContent has pt-0 by default */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-300">Convert to:</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {(['pdf', 'jpg', 'png', 'webp'] as ConversionFormat[]).map((format) => (
-                  <button
+                  // Using Button component for consistency, though not strictly required by subtask for these ones
+                  <Button
                     key={format}
+                    variant={targetFormat === format ? "default" : "secondary"}
                     onClick={() => setTargetFormat(format)}
-                    className={`
-                      px-4 py-2 rounded-xl font-medium uppercase text-sm
-                      transition-all duration-300
-                      ${targetFormat === format
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}
-                    `}
+                    className="uppercase text-sm w-full" // Ensure buttons fill grid cell
                   >
                     {format}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -134,25 +146,21 @@ export default function Convert() {
                   max="100"
                   value={quality}
                   onChange={(e) => setQuality(parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500" // Added accent color
                 />
               </div>
             )}
 
-            <button
-              onClick={handleConvert}
-              disabled={converting}
-              className={`
-                w-full py-3 px-4 rounded-xl font-medium
-                transition-all duration-300
-                ${converting
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'}
-              `}
-            >
-              {converting ? 'Converting...' : 'Convert'}
-            </button>
-          </div>
+              <Button
+                onClick={handleConvert}
+                isLoading={converting}
+                className="w-full py-3" // Maintained w-full, py-3 might make it slightly taller than default Button
+                size="lg" // Using lg size for a taller button, closer to original py-3
+              >
+                Convert
+              </Button>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

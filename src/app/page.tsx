@@ -39,7 +39,7 @@ const utilityCards = [
     title: "Unicode Generator",
     description: "Generate and convert Unicode characters",
     icon: "/window.svg",
-    path: "/text/unicode"
+    path: "/text?tool=unicode" // Updated path
   },
   {
     title: "Image Metadata",
