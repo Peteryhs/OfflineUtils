@@ -1,5 +1,17 @@
-const piexif = require('piexifjs');
+import * as piexif from 'piexifjs';
 import { ExtendedImageMetadata } from './exif';
+
+type Rational = [number, number];
+type ExifValue = string | number | number[] | Rational[] | undefined | null | { numerator: number, denominator: number } | { degrees: number, minutes: number, seconds: number, direction?: string };
+
+interface ExifDict {
+  '0th'?: { [key: number]: ExifValue };
+  'Exif'?: { [key: number]: ExifValue };
+  'GPS'?: { [key: number]: ExifValue };
+  'Interop'?: { [key: number]: ExifValue };
+  '1st'?: { [key: number]: ExifValue };
+  thumbnail?: string | undefined;
+}
 
 export async function saveImageWithMetadata(imageUrl: string, metadata: ExtendedImageMetadata): Promise<Blob> {
   try {
@@ -10,7 +22,7 @@ export async function saveImageWithMetadata(imageUrl: string, metadata: Extended
     const base64Image = Buffer.from(arrayBuffer).toString('base64');
     
     // Create EXIF dictionary
-    const exifDict: any = {};
+    const exifDict: ExifDict = {};
     exifDict['0th'] = {};
     exifDict['Exif'] = {};
     exifDict['GPS'] = {};

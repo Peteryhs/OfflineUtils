@@ -34,15 +34,23 @@ export default function Convert() {
     if (!file) return;
     setConverting(true);
     try {
-      let result: ArrayBuffer;
+      let result: ArrayBuffer | Uint8Array | null;
+      let blobType: string;
+
       if (targetFormat === 'pdf') {
         result = await convertToPDF(file);
+        blobType = 'application/pdf';
       } else {
         result = await convertToImage(file, targetFormat, quality);
+        blobType = `image/${targetFormat}`;
+      }
+
+      if (!result) {
+        throw new Error('Conversion returned null.');
       }
 
       // Create and trigger download
-      const blob = new Blob([result]);
+      const blob = new Blob([result], { type: blobType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

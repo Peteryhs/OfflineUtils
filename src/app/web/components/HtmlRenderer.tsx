@@ -1,18 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CodeMirror from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { autocompletion } from "@codemirror/autocomplete";
-import { Textarea } from "@/components/ui/textarea";
-import sanitizeHtml from "sanitize-html";
+import { Extension } from "@codemirror/state";
 
 export default function HtmlRenderer() {
-  const [htmlInput, setHtmlInput] = useState("");
-  const [renderedOutput, setRenderedOutput] = useState("");
   const [code, setCode] = useState("");
   const [dividerX, setDividerX] = useState(50); // percent
   const [dragging, setDragging] = useState(false);
@@ -32,18 +29,19 @@ export default function HtmlRenderer() {
 
   useEffect(() => {
     // Debounce rendering or render on button click for performance
-    const sanitized = sanitizeHtml(htmlInput);
-    setRenderedOutput(sanitized);
-  }, [htmlInput]);
+    // const sanitized = sanitizeHtml(htmlInput); // htmlInput is removed
+    // setRenderedOutput(sanitized); // _renderedOutput and setRenderedOutput are removed
+  }, []); // Empty dependency array as htmlInput is removed
 
-  const onMouseMove = (e: MouseEvent) => {
+  const onMouseMove = useCallback((e: MouseEvent) => {
     if (!dragging || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     let percent = ((e.clientX - rect.left) / rect.width) * 100;
     percent = Math.max(10, Math.min(90, percent));
     setDividerX(percent);
-  };
-  const onMouseUp = () => setDragging(false);
+  }, [dragging, containerRef, setDividerX]);
+
+  const onMouseUp = useCallback(() => setDragging(false), [setDragging]);
 
   useEffect(() => {
     if (dragging) {
@@ -54,11 +52,11 @@ export default function HtmlRenderer() {
         window.removeEventListener("mouseup", onMouseUp);
       };
     }
-  }, [dragging]);
+  }, [dragging, onMouseMove, onMouseUp]);
 
   // Helper to detect language mode based on content (simple heuristic)
   const getExtensions = () => {
-    const exts = [html()];
+    const exts: Extension[] = [html()];
     if (code.includes("<style")) exts.push(css());
     if (code.includes("<script")) exts.push(javascript());
     exts.push(autocompletion());

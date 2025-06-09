@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Canvas from '../components/Canvas';
 import Header from '../components/Header';
