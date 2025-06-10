@@ -16,6 +16,8 @@ interface DragItem {
   type: string;
 }
 
+import { Button } from '@/components/ui/button';
+
 export const DraggableFile = ({ id, name, index, moveFile, onRemove }: DraggableFileProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -73,12 +75,14 @@ export const DraggableFile = ({ id, name, index, moveFile, onRemove }: Draggable
       style={{ opacity }}
     >
       <span className="truncate flex-1 text-gray-300">{name}</span>
-      <button
+      <Button
         onClick={onRemove}
-        className="ml-2 text-red-400 hover:text-red-300 transition-colors"
+        variant="destructive"
+        size="sm"
+        className="ml-2"
       >
         Remove
-      </button>
+      </Button>
     </div>
   );
 };

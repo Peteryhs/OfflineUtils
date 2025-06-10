@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDropzone, FileWithPath } from 'react-dropzone'; // Added FileWithPath
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Header from '../components/Header';
 import { getExifData, ExtendedImageMetadata } from '../utils/exif';
@@ -28,6 +28,56 @@ export default function MetadataViewer() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
   const [editMode, setEditMode] = useState<{[key: string]: boolean}>({});
+
+  // Logic from original handleFileSelect, now as a separate function
+  const processFile = useCallback(async (file: FileWithPath) => {
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    setImageUrl(url); // Use the new url from the dropped file
+
+    const basicMetadata: ImageMetadata = {
+      fileName: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: new Date(file.lastModified).toLocaleString(),
+    };
+
+    const img = new Image();
+    img.src = url;
+    await new Promise<void>((resolve) => { // Ensure Promise is typed
+      img.onload = () => {
+        basicMetadata.dimensions = {
+          width: img.width,
+          height: img.height,
+        };
+        resolve(); // Resolve promise
+      };
+      img.onerror = () => { // Handle potential error in image loading
+        console.error("Error loading image for metadata");
+        resolve(); // Still resolve to not block indefinitely
+      }
+    });
+
+    const exifData = await getExifData(file);
+    if (exifData) {
+      basicMetadata.exif = exifData;
+    }
+
+    setMetadata(basicMetadata);
+  }, []); // Removed setImageUrl from dependencies as it's part of the same state update cycle
+
+  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      processFile(acceptedFiles[0]);
+    }
+  }, [processFile]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': [] }, // Standard way to define accept for images
+    maxFiles: 1,
+  });
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -82,15 +132,134 @@ export default function MetadataViewer() {
     });
   };
 
-  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // This is the old handleFileSelect, triggered by the hidden input.
+  // It's kept if "Select Another Image" button is used, but dropzone is primary.
+  // For this refactor, we'll remove it to rely on the dropzone's own input.
+  // const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
+  //   await processFile(file as FileWithPath);
+  // }, [processFile]);
 
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
+  const clearMetadata = useCallback(() => {
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+    }
+    setImageUrl(null);
+    setMetadata(null);
+    setExpandedSections({});
+    setEditMode({});
+  }, [imageUrl]);
 
-    const basicMetadata: ImageMetadata = {
-      fileName: file.name,
+  const renderEditableField = (category: string, field: string, value: string | number | undefined, label: string) => {
+    const isEditing = editMode[`${category}.${field}`];
+    return (
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <label className="block text-sm font-medium text-gray-300 mb-1">{label}</label> {/* Changed p to label and updated style */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleEditMode(`${category}.${field}`)}
+          >
+            {isEditing ? 'Save' : 'Edit'}
+          </Button>
+        </div>
+        {isEditing ? (
+          <Input
+            value={value || ''}
+            onChange={(e) => updateMetadataField(category, field, e.target.value)}
+          />
+        ) : (
+          <p>{value}</p>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen p-6 md:p-12 bg-gradient-to-b from-gray-900 to-black">
+      <Header />
+      <motion.div
+        className="max-w-4xl mx-auto pt-16"
+        initial="hidden"
+        animate="visible"
+        variants={staggerChildren}
+      >
+        <motion.h1 variants={slideIn} className="text-3xl font-bold text-center mb-4 text-gray-100">Image Metadata Tools</motion.h1>
+        <p className="text-lg text-gray-400 text-center mb-8">View and edit image metadata, including EXIF, GPS, and more.</p>
+        <motion.div
+          variants={fadeIn}
+          className="p-6 bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 space-y-6"
+        >
+            {!metadata ? (
+              <div {...getRootProps()} className={`
+                p-12 border-2 border-dashed rounded-2xl text-center cursor-pointer
+                transition-all duration-300 ease-out
+                ${isDragActive ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 hover:border-gray-600'}
+              `}>
+                <input {...getInputProps()} />
+                <div className="space-y-4">
+                  <div className="w-16 h-16 mx-auto bg-gray-800 rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <div className="text-gray-400">
+                    <p className="font-medium">Drop your image here, or click to select</p>
+                    <p className="text-sm">Supports JPG, PNG, WebP, etc.</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <motion.div variants={fadeIn} className="flex items-center gap-4">
+                  {/* Removed "Select Another Image" button and its hidden input to simplify */}
+                  <motion.div variants={scaleIn}>
+                    <Button
+                      onClick={clearPrivacyData}
+                      variant="secondary"
+                    >
+                      Clear Privacy Data
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={scaleIn}>
+                    <Button
+                      onClick={async () => {
+                        if (imageUrl && metadata?.exif) {
+                          try {
+                            const modifiedImage = await saveImageWithMetadata(imageUrl, metadata.exif);
+                            const downloadUrl = URL.createObjectURL(modifiedImage);
+                            const link = document.createElement('a');
+                            link.href = downloadUrl;
+                            link.download = metadata.fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(downloadUrl);
+                          } catch (error) {
+                            console.error('Error saving image:', error);
+                          }
+                        }
+                      }}
+                      variant="secondary"
+                    >
+                      Save Image
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={scaleIn}>
+                    <Button
+                      onClick={clearMetadata} // This will clear and show dropzone
+                      variant="destructive"
+                    >
+                      Clear & Upload New
+                    </Button>
+                  </motion.div>
+                </motion.div>
+
+                {imageUrl && (
+                  <motion.div
+                    variants={scaleIn}
       size: file.size,
       type: file.type,
       lastModified: new Date(file.lastModified).toLocaleString(),
@@ -144,7 +313,6 @@ export default function MetadataViewer() {
           <Input
             value={value || ''}
             onChange={(e) => updateMetadataField(category, field, e.target.value)}
-            className="bg-gray-800 border-gray-700"
           />
         ) : (
           <p>{value}</p>
@@ -162,73 +330,76 @@ export default function MetadataViewer() {
         animate="visible"
         variants={staggerChildren}
       >
-        <motion.div variants={fadeIn}>
-          <Card className="p-6 bg-gray-900/50 backdrop-blur-xl border-gray-800">
-            <motion.h2 variants={slideIn} className="text-2xl font-semibold mb-6">Image Metadata Viewer</motion.h2>
-            
-            <div className="space-y-6">
-              <motion.div variants={fadeIn} className="flex items-center gap-4">
-                <Button
-                  onClick={() => document.getElementById('fileInput')?.click()}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Select Image
-                </Button>
-                {metadata && (
-                  <>
-                    <motion.div variants={scaleIn}>
-                      <Button
-                        onClick={clearPrivacyData}
-                        variant="secondary"
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                      >
-                        Clear Privacy Data
-                      </Button>
-                    </motion.div>
-                    <motion.div variants={scaleIn}>
-                      <Button
-                        onClick={async () => {
-                          if (imageUrl && metadata?.exif) {
-                            try {
-                              const modifiedImage = await saveImageWithMetadata(imageUrl, metadata.exif);
-                              const downloadUrl = URL.createObjectURL(modifiedImage);
-                              const link = document.createElement('a');
-                              link.href = downloadUrl;
-                              link.download = metadata.fileName;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              URL.revokeObjectURL(downloadUrl);
-                            } catch (error) {
-                              console.error('Error saving image:', error);
-                            }
+        <motion.h1 variants={slideIn} className="text-3xl font-bold mb-4 text-center">Image Metadata Tools</motion.h1>
+        <motion.div
+          variants={fadeIn}
+          className="p-6 bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 space-y-6"
+        >
+            {!metadata ? (
+              <div {...getRootProps()} className={`
+                p-12 border-2 border-dashed rounded-2xl text-center cursor-pointer
+                transition-all duration-300 ease-out
+                ${isDragActive ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 hover:border-gray-600'}
+              `}>
+                <input {...getInputProps()} />
+                <div className="space-y-4">
+                  <div className="w-16 h-16 mx-auto bg-gray-800 rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <div className="text-gray-400">
+                    <p className="font-medium">Drop your image here, or click to select</p>
+                    <p className="text-sm">Supports JPG, PNG, WebP, etc.</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <motion.div variants={fadeIn} className="flex items-center gap-4">
+                  {/* Removed "Select Another Image" button and its hidden input to simplify */}
+                  <motion.div variants={scaleIn}>
+                    <Button
+                      onClick={clearPrivacyData}
+                      variant="secondary"
+                    >
+                      Clear Privacy Data
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={scaleIn}>
+                    <Button
+                      onClick={async () => {
+                        if (imageUrl && metadata?.exif) {
+                          try {
+                            const modifiedImage = await saveImageWithMetadata(imageUrl, metadata.exif);
+                            const downloadUrl = URL.createObjectURL(modifiedImage);
+                            const link = document.createElement('a');
+                            link.href = downloadUrl;
+                            link.download = metadata.fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(downloadUrl);
+                          } catch (error) {
+                            console.error('Error saving image:', error);
                           }
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Save Image
-                      </Button>
-                    </motion.div>
-                    <motion.div variants={scaleIn}>
-                      <Button
-                        onClick={clearMetadata}
-                        variant="destructive"
-                      >
-                        Clear
-                      </Button>
-                    </motion.div>
-                  </>
-                )}
-                <input
-                  type="file"
-                  id="fileInput"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-              </motion.div>
+                        }
+                      }}
+                      variant="secondary"
+                    >
+                      Save Image
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={scaleIn}>
+                    <Button
+                      onClick={clearMetadata}
+                      variant="destructive"
+                    >
+                      Clear All & Re-upload
+                    </Button>
+                  </motion.div>
+                </motion.div>
 
-              <AnimatePresence>
                 {imageUrl && (
                   <motion.div 
                     variants={scaleIn}
@@ -256,7 +427,7 @@ export default function MetadataViewer() {
                     className="space-y-6"
                   >
                     <motion.div variants={scaleIn}>
-                      <Card className="p-4 bg-blue-900/30 border-blue-700">
+                      <div className="p-4 bg-blue-900/30 border-blue-700 rounded-xl">
                         <div className="grid grid-cols-2 gap-4">
                           {renderEditableField('basic', 'fileName', metadata.fileName, 'File Name')}
                           <div className="space-y-2">
@@ -281,13 +452,14 @@ export default function MetadataViewer() {
                     <motion.div variants={staggerChildren} className="space-y-4">
                       {/* Basic Information Section */}
                       <motion.div variants={fadeIn} className="border border-gray-800 rounded-lg overflow-hidden">
-                        <button
+                        <Button
                           onClick={() => toggleSection('basic')}
-                          className="w-full p-4 text-left bg-gray-800/50 hover:bg-gray-800/70 flex justify-between items-center"
+                          variant="subtle"
+                          className="w-full justify-between p-4 text-left"
                         >
                           <h3 className="text-xl font-semibold">Basic Information</h3>
                           <span>{expandedSections['basic'] ? '−' : '+'}</span>
-                        </button>
+                        </Button>
                         <AnimatePresence>
                           {expandedSections['basic'] && (
                             <motion.div 
@@ -314,13 +486,14 @@ export default function MetadataViewer() {
                       {/* EXIF Information Section */}
                       {metadata.exif && (
                         <motion.div variants={fadeIn} className="border border-gray-800 rounded-lg overflow-hidden">
-                          <button
+                          <Button
                             onClick={() => toggleSection('exif')}
-                            className="w-full p-4 text-left bg-gray-800/50 hover:bg-gray-800/70 flex justify-between items-center"
+                            variant="subtle"
+                            className="w-full justify-between p-4 text-left"
                           >
                             <h3 className="text-xl font-semibold">EXIF Information</h3>
                             <span>{expandedSections['exif'] ? '−' : '+'}</span>
-                          </button>
+                          </Button>
                           <AnimatePresence>
                             {expandedSections['exif'] && (
                               <motion.div 
@@ -347,13 +520,14 @@ export default function MetadataViewer() {
                       {/* GPS Information Section */}
                       {metadata.exif?.latitude && metadata.exif?.longitude && (
                         <motion.div variants={fadeIn} className="border border-gray-800 rounded-lg overflow-hidden">
-                          <button
+                          <Button
                             onClick={() => toggleSection('gps')}
-                            className="w-full p-4 text-left bg-gray-800/50 hover:bg-gray-800/70 flex justify-between items-center"
+                            variant="subtle"
+                            className="w-full justify-between p-4 text-left"
                           >
                             <h3 className="text-xl font-semibold">GPS Information</h3>
                             <span>{expandedSections['gps'] ? '−' : '+'}</span>
-                          </button>
+                          </Button>
                           <AnimatePresence>
                             {expandedSections['gps'] && (
                               <motion.div 
@@ -377,8 +551,7 @@ export default function MetadataViewer() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-          </Card>
+
         </motion.div>
       </motion.div>
     </div>

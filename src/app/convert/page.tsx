@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Header from '../components/Header';
 import { convertToImage, convertToPDF } from '../utils/converter';
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 
 type ConversionFormat = 'pdf' | 'jpg' | 'png' | 'webp';
 
@@ -72,8 +74,8 @@ export default function Convert() {
       <Header />
       <div className="max-w-4xl mx-auto pt-16 space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Format Converter</h1>
-          <p className="text-gray-400">Convert between PDF and image formats with high quality</p>
+          <h1 className="text-3xl font-bold text-center mb-4 text-gray-100">Format Converter</h1>
+          <p className="text-lg text-gray-400 text-center mb-8">Convert between PDF and image formats with high quality</p>
         </div>
 
         <div {...getRootProps()} className={`
@@ -105,53 +107,44 @@ export default function Convert() {
         {file && (
           <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-300">Convert to:</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Convert to:</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {(['pdf', 'jpg', 'png', 'webp'] as ConversionFormat[]).map((format) => (
-                  <button
+                  <Button
                     key={format}
                     onClick={() => setTargetFormat(format)}
-                    className={`
-                      px-4 py-2 rounded-xl font-medium uppercase text-sm
-                      transition-all duration-300
-                      ${targetFormat === format
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}
-                    `}
+                    variant={targetFormat === format ? "default" : "subtle"}
+                    size="sm"
+                    className="uppercase"
                   >
                     {format}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
 
             {targetFormat !== 'pdf' && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">Quality: {quality}%</label>
-                <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  value={quality}
-                  onChange={(e) => setQuality(parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
+                <label className="block text-sm font-medium text-gray-300 mb-2">Quality: {quality}%</label>
+                <Slider
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={[quality]}
+                  onValueChange={(newVal) => setQuality(newVal[0])}
+                  className="w-full"
                 />
               </div>
             )}
 
-            <button
+            <Button
               onClick={handleConvert}
               disabled={converting}
-              className={`
-                w-full py-3 px-4 rounded-xl font-medium
-                transition-all duration-300
-                ${converting
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'}
-              `}
+              variant="default"
+              className="w-full"
             >
               {converting ? 'Converting...' : 'Convert'}
-            </button>
+            </Button>
           </div>
         )}
       </div>

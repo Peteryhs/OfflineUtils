@@ -89,7 +89,8 @@ export default function UnicodeGenerator() {
         <div className="space-y-2">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor="amount" className="text-sm font-medium">Number of Characters</Label>
+              {/* Assuming Label is already block, adding text color and margin */}
+              <Label htmlFor="amount" className="text-sm font-medium text-gray-300 mb-2">Number of Characters</Label>
               <span className="text-sm text-gray-400">{amount}</span>
             </div>
             <Slider
@@ -105,7 +106,7 @@ export default function UnicodeGenerator() {
         </div>
 
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Unicode Ranges</Label>
+          <Label className="block text-sm font-medium text-gray-300 mb-2">Unicode Ranges</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 rounded-xl border border-gray-800 bg-gray-900/30 backdrop-blur-sm">
             {UNICODE_RANGES.map((range) => (
               <div key={range.id} className="flex items-center space-x-3 p-3 rounded-xl bg-gray-900/50 hover:bg-gray-800/50 border border-gray-800 hover:border-gray-700 transition-all duration-300 group">
@@ -129,7 +130,8 @@ export default function UnicodeGenerator() {
 
         <Button 
           onClick={handleGenerate} 
-          className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
+          variant="default"
+          className="w-full md:w-auto"
         >
           Generate
         </Button>
@@ -137,22 +139,20 @@ export default function UnicodeGenerator() {
 
       {generatedText && (
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Generated Text</Label>
+          <Label className="block text-sm font-medium text-gray-300 mb-2">Generated Text</Label>
           <div className="p-6 bg-gray-900/30 backdrop-blur-sm border border-gray-800 rounded-xl font-mono break-all relative min-h-[100px] max-h-[300px] overflow-y-auto group hover:border-gray-700 transition-all duration-300">
             {generatedText}
             <div className="absolute top-3 right-3 flex gap-2">
               <Button
-                variant="outline"
+                variant="subtle"
                 size="sm"
-                className="bg-gray-900/50 hover:bg-gray-800/50 border border-gray-800 hover:border-gray-700 transition-all duration-300"
                 onClick={handleCopy}
               >
                 Copy
               </Button>
               <Button
-                variant="outline"
+                variant="subtle"
                 size="sm"
-                className="bg-gray-900/50 hover:bg-gray-800/50 border border-gray-800 hover:border-gray-700 transition-all duration-300"
                 onClick={handleSave}
               >
                 Save as File

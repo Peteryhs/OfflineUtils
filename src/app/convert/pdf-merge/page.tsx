@@ -7,6 +7,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { mergeToPDF } from '../../utils/pdf-merge';
 import Header from '../../components/Header';
+import { Button } from '@/components/ui/button';
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -87,8 +88,8 @@ export default function PDFMergePage() {
         <Header />
         <div className="max-w-4xl mx-auto pt-16 space-y-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">PDF Merge Tool</h1>
-            <p className="text-gray-400">Combine multiple PDFs and images into a single document</p>
+          <h1 className="text-3xl font-bold text-center mb-4 text-gray-100">PDF Merge Tool</h1>
+          <p className="text-lg text-gray-400 text-center mb-8">Combine multiple PDFs and images into a single document</p>
           </div>
       
           <div className="mb-8">
@@ -101,23 +102,30 @@ export default function PDFMergePage() {
               `}
             >
               <input {...getInputProps()} />
-              {isDragActive ? (
-                <p className="text-foreground">Drop the files here...</p>
-              ) : (
-                <p className="text-foreground">Drag and drop files here, or click to select files</p>
-              )}
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                Supported formats: PDF, PNG, JPG, JPEG, GIF, BMP
-              </p>
+              <div className="space-y-4"> {/* Added space-y-4 to group icon and text */}
+                <div className="w-16 h-16 mx-auto bg-gray-800 rounded-xl flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                {isDragActive ? (
+                  <p className="text-foreground">Drop the files here...</p>
+                ) : (
+                  <p className="text-foreground">Drag and drop files here, or click to select files</p>
+                )}
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Supported formats: PDF, PNG, JPG, JPEG, GIF, BMP
+                </p>
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
-              <h2 className="text-xl font-semibold mb-4 text-gray-100">Options</h2>
+              <h2 className="text-xl font-semibold text-gray-200 mb-4">Options</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Quality ({options.quality}%)
                   </label>
                   <input
@@ -130,7 +138,7 @@ export default function PDFMergePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Margin ({options.margin}px)
                   </label>
                   <input
@@ -146,7 +154,7 @@ export default function PDFMergePage() {
             </div>
 
             <div className="space-y-6 bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-800">
-              <h2 className="text-xl font-semibold mb-4 text-gray-100">Files ({files.length})</h2>
+              <h2 className="text-xl font-semibold text-gray-200 mb-4">Files ({files.length})</h2>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 {files.map((file, index) => (
                   <DraggableFile
@@ -168,13 +176,14 @@ export default function PDFMergePage() {
             </div>
           </div>
 
-          <button
+          <Button
             onClick={handleMerge}
             disabled={files.length === 0}
-            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-300 ${files.length === 0 ? 'bg-gray-700 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/25'}`}
+            variant="default"
+            className="w-full"
           >
             Merge Files
-          </button>
+          </Button>
         </div>
       </div>
     </DndProvider>

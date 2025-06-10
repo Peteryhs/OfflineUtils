@@ -67,7 +67,7 @@ export default function HtmlRenderer() {
     <Card className="w-[85vw] mx-auto max-w-[100%] h-[calc(70vh)] flex bg-gray-900 border-0 shadow-lg overflow-hidden relative rounded-2xl">
       <div className="flex flex-col p-0 bg-gray-900 border-r border-gray-800 h-full" style={{width:`${dividerX}%`, minWidth:'350px'}} ref={containerRef}>
         <CardHeader className="p-6 pb-4">
-          <CardTitle className="text-xl font-semibold text-gray-100">HTML/CSS/JS Editor</CardTitle>
+          <CardTitle className="text-xl font-semibold text-gray-200">HTML/CSS/JS Editor</CardTitle>
         </CardHeader>
         <CardContent className="p-6 flex-1 flex flex-col min-h-0">
           <label htmlFor="htmlInput" className="block text-sm font-medium text-gray-300 mb-2">
@@ -99,7 +99,7 @@ export default function HtmlRenderer() {
       />
       <div className="flex flex-col bg-gray-900 p-0 justify-between h-full flex-1" style={{width:`${100-dividerX}%`}}>
         <div className="p-6 pb-0 flex-1 flex flex-col">
-          <h3 className="text-lg font-medium text-gray-100 mb-2">Rendered Output:</h3>
+          <h3 className="text-xl font-semibold text-gray-200 mb-4">Rendered Output:</h3>
           <div className="flex-1 w-full border border-gray-800 rounded-md bg-gray-800 overflow-auto p-0 min-h-0" style={{minHeight:'300px', height:'100%'}}>
             <iframe
               ref={iframeRef}

@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card } from '@/components/ui/card';
 import Header from '../components/Header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface Flashcard {
   id: string;
@@ -71,7 +72,7 @@ export default function FlashcardPage() {
     <div className="min-h-screen p-6 md:p-12 bg-gradient-to-b from-gray-900 to-black">
       <Header />
       <motion.div 
-        className="max-w-4xl mx-auto pt-16"
+        className="max-w-4xl mx-auto pt-16 space-y-8"
         initial="hidden"
         animate="visible"
         variants={{
@@ -80,39 +81,41 @@ export default function FlashcardPage() {
         }}
         transition={{ duration: 0.6 }}
       >
-        <Card className="p-6 bg-gray-900/50 backdrop-blur-xl border-gray-800">
-          <h1 className="text-2xl font-semibold mb-6">Flashcards</h1>
+        <h1 className="text-3xl font-bold text-center mb-4 text-gray-100">Flashcards</h1>
+        <p className="text-lg text-gray-400 text-center mb-8">Create, study, and manage your flashcards.</p>
+        <div className="p-6 bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 space-y-8">
           
           {/* Add new card form */}
-          <div className="mb-8 p-6 bg-gray-800/50 rounded-lg border border-gray-700">
-            <h2 className="text-xl font-semibold mb-4">Add New Card</h2>
+          <div className="p-6 bg-gray-800/50 rounded-lg border border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-200 mb-4">Add New Card</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Front</label>
-                <input
+                <label className="block text-sm font-medium text-gray-300 mb-2">Front</label>
+                <Input
                   type="text"
                   value={newCardFront}
                   onChange={(e) => setNewCardFront(e.target.value)}
-                  className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full"
                   placeholder="Enter the question or term"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Back</label>
-                <input
+                <label className="block text-sm font-medium text-gray-300 mb-2">Back</label>
+                <Input
                   type="text"
                   value={newCardBack}
                   onChange={(e) => setNewCardBack(e.target.value)}
-                  className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full"
                   placeholder="Enter the answer or definition"
                 />
               </div>
-              <button
+              <Button
                 onClick={addCard}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                variant="default"
+                size="sm"
               >
                 Add Card
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -175,12 +178,13 @@ export default function FlashcardPage() {
                 <p className="text-gray-400 text-sm">
                   Card {currentCard + 1} of {cards.length}
                 </p>
-                <button
+                <Button
                   onClick={nextCard}
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  variant="link"
+                  className="text-sm"
                 >
                   Press space to continue
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -191,13 +195,14 @@ export default function FlashcardPage() {
 
           {/* Card Management Section */}
           <div className="mt-12 border border-gray-800 rounded-lg overflow-hidden">
-            <button
+            <Button
               onClick={() => toggleSection('manage')}
-              className="w-full p-4 text-left bg-gray-800/50 hover:bg-gray-800/70 flex justify-between items-center"
+              variant="subtle"
+              className="w-full justify-between p-4 text-left"
             >
               <h2 className="text-xl font-semibold">Manage Cards</h2>
               <span>{expandedSections['manage'] ? '−' : '+'}</span>
-            </button>
+            </Button>
             <AnimatePresence>
               {expandedSections['manage'] && (
                 <motion.div
@@ -209,34 +214,36 @@ export default function FlashcardPage() {
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {cards.map((card) => (
-                <Card key={card.id} className="bg-gray-800/50 border-gray-700">
+                <div key={card.id} className="bg-gray-800/50 border-gray-700 rounded-lg">
                   <div className="p-4 space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Front</label>
-                      <input
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Front</label>
+                      <Input
                         type="text"
                         value={card.front}
                         onChange={(e) => editCard(card.id, e.target.value, card.back)}
-                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Back</label>
-                      <input
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Back</label>
+                      <Input
                         type="text"
                         value={card.back}
                         onChange={(e) => editCard(card.id, card.front, e.target.value)}
-                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full"
                       />
                     </div>
-                    <button
+                    <Button
                       onClick={() => deleteCard(card.id)}
-                      className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                      variant="destructive"
+                      size="sm"
+                      className="w-full"
                     >
                       Delete Card
-                    </button>
+                    </Button>
                   </div>
-                </Card>
+                </div>
               ))}
                   </div>
                 </motion.div>
