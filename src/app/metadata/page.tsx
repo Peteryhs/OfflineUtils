@@ -28,11 +28,13 @@ export default function MetadataViewer() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
   const [editMode, setEditMode] = useState<{[key: string]: boolean}>({});
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [isSavingImage, setIsSavingImage] = useState(false);
 
   // Logic from original handleFileSelect, now as a separate function
   const processFile = useCallback(async (file: FileWithPath) => {
     if (!file) return;
-
+    setIsProcessingFile(true);
     const url = URL.createObjectURL(file);
     setImageUrl(url); // Use the new url from the dropped file
 
@@ -65,6 +67,7 @@ export default function MetadataViewer() {
     }
 
     setMetadata(basicMetadata);
+    setIsProcessingFile(false);
   }, []); // Removed setImageUrl from dependencies as it's part of the same state update cycle
 
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
@@ -219,6 +222,7 @@ export default function MetadataViewer() {
                     <Button
                       onClick={clearPrivacyData}
                       variant="secondary"
+                      disabled={isProcessingFile || isSavingImage}
                     >
                       Clear Privacy Data
                     </Button>
@@ -227,6 +231,7 @@ export default function MetadataViewer() {
                     <Button
                       onClick={async () => {
                         if (imageUrl && metadata?.exif) {
+                          setIsSavingImage(true);
                           try {
                             const modifiedImage = await saveImageWithMetadata(imageUrl, metadata.exif);
                             const downloadUrl = URL.createObjectURL(modifiedImage);
@@ -239,18 +244,22 @@ export default function MetadataViewer() {
                             URL.revokeObjectURL(downloadUrl);
                           } catch (error) {
                             console.error('Error saving image:', error);
+                          } finally {
+                            setIsSavingImage(false);
                           }
                         }
                       }}
                       variant="secondary"
+                      disabled={isSavingImage || isProcessingFile}
                     >
-                      Save Image
+                      {isSavingImage ? "Saving..." : "Save Image"}
                     </Button>
                   </motion.div>
                   <motion.div variants={scaleIn}>
                     <Button
                       onClick={clearMetadata} // This will clear and show dropzone
                       variant="destructive"
+                      disabled={isProcessingFile || isSavingImage}
                     >
                       Clear & Upload New
                     </Button>
@@ -446,7 +455,7 @@ export default function MetadataViewer() {
                             <p className="text-lg">{(metadata.size / 1024).toFixed(2)} KB</p>
                           </div>
                         </div>
-                      </Card>
+                      {/* Removed stray </Card> tag here */}
                     </motion.div>
 
                     <motion.div variants={staggerChildren} className="space-y-4">

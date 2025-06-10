@@ -113,6 +113,7 @@ export default function FlashcardPage() {
                 onClick={addCard}
                 variant="default"
                 size="sm"
+                  disabled={!newCardFront.trim() || !newCardBack.trim()}
               >
                 Add Card
               </Button>
@@ -250,7 +251,7 @@ export default function FlashcardPage() {
               )}
             </AnimatePresence>
           </div>
-        </Card>
+        {/* Removed stray </Card> tag here */}
       </motion.div>
     </div>
   );

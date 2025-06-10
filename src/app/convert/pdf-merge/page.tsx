@@ -8,6 +8,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { mergeToPDF } from '../../utils/pdf-merge';
 import Header from '../../components/Header';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 
 interface FileWithPreview extends File {
   preview?: string;
@@ -24,6 +25,7 @@ export default function PDFMergePage() {
     quality: 100,
     margin: 0,
   });
+  const [merging, setMerging] = useState(false); // New state for merging status
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const filesWithPreview = acceptedFiles.map(file => 
@@ -60,7 +62,7 @@ export default function PDFMergePage() {
 
   const handleMerge = async () => {
     if (files.length === 0) return;
-
+    setMerging(true); // Set merging to true
     try {
       const mergedPdfBytes = await mergeToPDF(files, options);
       const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
@@ -79,6 +81,8 @@ export default function PDFMergePage() {
     } catch (error) {
       console.error('Error merging files:', error);
       alert('An error occurred while merging the files. Please try again.');
+    } finally {
+      setMerging(false); // Set merging to false in finally block
     }
   };
 
@@ -128,26 +132,26 @@ export default function PDFMergePage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Quality ({options.quality}%)
                   </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={options.quality}
-                    onChange={(e) => handleOptionChange('quality', parseInt(e.target.value))}
-                    className="w-full accent-blue-500"
+                  <Slider
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={[options.quality]}
+                    onValueChange={(newVal) => handleOptionChange('quality', newVal[0])}
+                    className="w-full"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Margin ({options.margin}px)
                   </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={options.margin}
-                    onChange={(e) => handleOptionChange('margin', parseInt(e.target.value))}
-                    className="w-full accent-blue-500"
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[options.margin]}
+                    onValueChange={(newVal) => handleOptionChange('margin', newVal[0])}
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -178,11 +182,11 @@ export default function PDFMergePage() {
 
           <Button
             onClick={handleMerge}
-            disabled={files.length === 0}
+            disabled={files.length === 0 || merging}
             variant="default"
             className="w-full"
           >
-            Merge Files
+            {merging ? 'Merging...' : 'Merge Files'}
           </Button>
         </div>
       </div>
